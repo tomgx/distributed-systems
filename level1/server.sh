@@ -1,3 +1,3 @@
 #!/bin/bash
-rmiregistry &
+# Run the AuctionServer class, which includes RMI registry setup and service binding
 java AuctionServer
