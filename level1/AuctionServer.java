@@ -1,4 +1,3 @@
-import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -6,31 +5,48 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
 import java.util.Map;
 
-public class AuctionServer extends UnicastRemoteObject implements Auction {
-    private Map<Integer, AuctionItem> auctionItems;
+public class AuctionServer implements Auction {
+    private Map<Integer, AuctionItem> items;
 
-    public AuctionServer() throws RemoteException {
-        super();
-        auctionItems = new HashMap<>();
-        auctionItems.put(1, new AuctionItem(1, "Laptop", "High-end gaming laptop", 1000));
-        auctionItems.put(2, new AuctionItem(2, "Phone", "Latest smartphone", 700));
-        auctionItems.put(3, new AuctionItem(3, "Watch", "Smartwatch", 300));
+    public AuctionServer() {
+        items = new HashMap<>();
+        AuctionItem item1 = new AuctionItem();
+        item1.itemID = 1;
+        item1.name = "Vintage Watch";
+        item1.description = "A rare vintage watch from 1960.";
+        item1.highestBid = 500;
+        
+        AuctionItem item2 = new AuctionItem();
+        item2.itemID = 2;
+        item2.name = "Painting";
+        item2.description = "Original oil painting by a famous artist.";
+        item2.highestBid = 1200;
+        
+        AuctionItem item3 = new AuctionItem();
+        item3.itemID = 3;
+        item3.name = "Antique Vase";
+        item3.description = "A beautiful vase from ancient China.";
+        item3.highestBid = 3000;
+        
+        items.put(item1.itemID, item1);
+        items.put(item2.itemID, item2);
+        items.put(item3.itemID, item3);
     }
 
     @Override
     public AuctionItem getSpec(int itemID) throws RemoteException {
-        return auctionItems.getOrDefault(itemID, null);
+        return items.get(itemID);
     }
 
     public static void main(String[] args) {
         try {
-            // Start the RMI registry
-            Registry registry = LocateRegistry.createRegistry(1099);
-            // Create and bind the server object to the "Auction" name
             AuctionServer server = new AuctionServer();
-            Naming.rebind("Auction", server);
+            Auction stub = (Auction) UnicastRemoteObject.exportObject(server, 0);
 
-            System.out.println("Auction Server is ready.");
+            Registry registry = LocateRegistry.createRegistry(1099);
+            registry.bind("Auction", stub);
+
+            System.out.println("Auction server ready");
         } catch (Exception e) {
             System.err.println("Server exception: " + e.toString());
             e.printStackTrace();
