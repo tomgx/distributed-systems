@@ -1,13 +1,12 @@
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-import javax.crypto.SealedObject;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import javax.crypto.Cipher;
+import javax.crypto.SealedObject;
+import javax.crypto.SecretKey;
 import java.util.HashMap;
 import java.util.Map;
-import java.io.FileInputStream;
-import java.io.ObjectInputStream;
 
 public class AuctionServer extends UnicastRemoteObject implements Auction {
     private Map<Integer, AuctionItem> items;
@@ -18,6 +17,19 @@ public class AuctionServer extends UnicastRemoteObject implements Auction {
         loadKey();
         loadItems();
     }
+
+    public static void main(String[] args) {
+        try {
+            AuctionServer server = new AuctionServer();
+            Registry registry = LocateRegistry.createRegistry(1099); // Use default port 1099
+            registry.rebind("Auction", server);  // Bind the service with the name "Auction"
+            System.out.println("Auction RMI Server is running...");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
 
     private void loadKey() {
         try (ObjectInputStream keyIn = new ObjectInputStream(new FileInputStream("keys/testKey.aes"))) {
@@ -46,4 +58,5 @@ public class AuctionServer extends UnicastRemoteObject implements Auction {
             throw new RemoteException("Error encrypting item", e);
         }
     }
+}
 }
